@@ -3,9 +3,7 @@
 #
 
 FROM golang:1.13-alpine as compile
-COPY ./kubectl.version ./kustomize.version ./
-RUN export $(cat kubectl.version | xargs) \
-    && export $(cat kustomize.version | xargs)
+COPY ./kubectl.version ./kustomize.version /
 ARG FLUX_VERSION=1.17.0
 ENV GO111MODULE=on \
     CGO_ENABLED=0 \
@@ -27,13 +25,15 @@ RUN curl -L https://github.com/fluxcd/flux/releases/download/${FLUX_VERSION}/flu
 
 # build kustomize
 WORKDIR /go/src/github.com/kubernetes-sigs/kustomize
-RUN git clone https://github.com/kubernetes-sigs/kustomize.git . \
+RUN . /kustomize.version \
+    && git clone https://github.com/kubernetes-sigs/kustomize.git . \
     && git checkout kustomize/v${KUSTOMIZE_VERSION}
 RUN go build -o kustomize -installsuffix cgo ./cmd/kustomize
 
 # Download kubectl
 WORKDIR /kubernetes
-RUN curl -L https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/arm/kubectl -o ./kubectl \
+RUN . /kubectl.version \
+    && curl -L https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/arm/kubectl -o ./kubectl \
     && chmod a+x ./kubectl
 
 #
