@@ -28,7 +28,7 @@ WORKDIR /go/src/github.com/kubernetes-sigs/kustomize
 RUN . /kustomize.version \
     && git clone https://github.com/kubernetes-sigs/kustomize.git . \
     && git checkout kustomize/v${KUSTOMIZE_VERSION}
-RUN go build -o kustomize -installsuffix cgo ./cmd/kustomize
+RUN cd kustomize && go build -o kustomize -installsuffix cgo .
 
 # Download kubectl
 WORKDIR /kubernetes
@@ -57,7 +57,7 @@ COPY ./ssh_config /etc/ssh/ssh_config
 
 # Kubectl, Kustomize
 COPY --from=compile /kubernetes/kubectl /usr/local/bin/
-COPY --from=compile /go/src/github.com/kubernetes-sigs/kustomize /usr/local/bin/
+COPY --from=compile /go/src/github.com/kubernetes-sigs/kustomize/kustomize /usr/local/bin/
 # TODO: mozilla/sops has no arm binaries
 
 ENTRYPOINT [ "/sbin/tini", "--", "fluxd" ]
