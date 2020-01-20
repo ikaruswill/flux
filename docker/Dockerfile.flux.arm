@@ -28,7 +28,7 @@ RUN curl -L https://github.com/fluxcd/flux/releases/download/${FLUX_VERSION}/flu
 # build kustomize
 WORKDIR /go/src/github.com/kubernetes-sigs/kustomize
 RUN git clone https://github.com/kubernetes-sigs/kustomize.git . \
-    && git checkout ${KUSTOMIZE_VERSION}
+    && git checkout kustomize/v${KUSTOMIZE_VERSION}
 RUN go build -o kustomize -installsuffix cgo ./cmd/kustomize
 
 # Download kubectl
