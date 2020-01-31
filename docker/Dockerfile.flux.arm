@@ -3,7 +3,7 @@
 #
 
 FROM golang:1.13-alpine as compile
-COPY ./kubectl.version ./kustomize.version /
+COPY ./kubectl.version ./kustomize.version ./sops.version /
 ARG FLUX_VERSION=1.17.0
 ENV GO111MODULE=on \
     CGO_ENABLED=0 \
@@ -26,6 +26,12 @@ RUN . /kustomize.version \
     && git clone --depth 1 -b kustomize/v${KUSTOMIZE_VERSION} https://github.com/kubernetes-sigs/kustomize.git . \
     && cd kustomize \
     && go build -o kustomize -installsuffix cgo .
+
+# build sops
+WORKDIR /go/src/github.com/mozilla/sops
+RUN . /sops.version \
+    && git clone --depth 1 -b ${SOPS_VERSION} https://github.com/mozilla/sops.git . \
+    && go build -o sops ./cmd/sops
 
 # download kubectl
 WORKDIR /kubernetes
