@@ -11,30 +11,31 @@ ENV GO111MODULE=on \
     GOARCH=arm \
     GOARM=7
 
-# build fluxd, download fluxctl
+# build fluxd
 WORKDIR /go/src/github.com/fluxcd/flux
 RUN apk add --no-cache \
       openssh-client ca-certificates tini 'git>=2.12.0' 'gnutls>=3.6.7' gnupg gawk socat build-base gcc wget git bash curl \
     && update-ca-certificates
 RUN apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing git-secret
-RUN git clone https://github.com/fluxcd/flux.git . \
-    && git checkout ${FLUX_VERSION}
-RUN go build -o fluxd -installsuffix cgo ./cmd/fluxd
-RUN curl -L https://github.com/fluxcd/flux/releases/download/${FLUX_VERSION}/fluxctl_linux_arm -o ./fluxctl \
-    && chmod a+x ./fluxctl
+RUN git clone --depth 1 -b ${FLUX_VERSION} https://github.com/fluxcd/flux.git . \
+    && go build -o fluxd -installsuffix cgo ./cmd/fluxd
 
 # build kustomize
 WORKDIR /go/src/github.com/kubernetes-sigs/kustomize
 RUN . /kustomize.version \
-    && git clone https://github.com/kubernetes-sigs/kustomize.git . \
-    && git checkout kustomize/v${KUSTOMIZE_VERSION}
-RUN cd kustomize && go build -o kustomize -installsuffix cgo .
+    && git clone --depth 1 -b kustomize/v${KUSTOMIZE_VERSION} https://github.com/kubernetes-sigs/kustomize.git . \
+    && cd kustomize \
+    && go build -o kustomize -installsuffix cgo .
 
-# Download kubectl
+# download kubectl
 WORKDIR /kubernetes
 RUN . /kubectl.version \
     && curl -L https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/arm/kubectl -o ./kubectl \
     && chmod a+x ./kubectl
+
+# download fluxctl
+RUN curl -L https://github.com/fluxcd/flux/releases/download/${FLUX_VERSION}/fluxctl_linux_arm -o ./fluxctl \
+    && chmod a+x ./fluxctl
 
 #
 # Build
