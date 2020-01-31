@@ -20,6 +20,10 @@ RUN apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing git-
 RUN git clone --depth 1 -b ${FLUX_VERSION} https://github.com/fluxcd/flux.git . \
     && go build -o fluxd -installsuffix cgo ./cmd/fluxd
 
+# download fluxctl
+RUN curl -L https://github.com/fluxcd/flux/releases/download/${FLUX_VERSION}/fluxctl_linux_arm -o ./fluxctl \
+    && chmod a+x ./fluxctl
+
 # build kustomize
 WORKDIR /go/src/github.com/kubernetes-sigs/kustomize
 RUN . /kustomize.version \
@@ -38,10 +42,6 @@ WORKDIR /kubernetes
 RUN . /kubectl.version \
     && curl -L https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/arm/kubectl -o ./kubectl \
     && chmod a+x ./kubectl
-
-# download fluxctl
-RUN curl -L https://github.com/fluxcd/flux/releases/download/${FLUX_VERSION}/fluxctl_linux_arm -o ./fluxctl \
-    && chmod a+x ./fluxctl
 
 #
 # Build
