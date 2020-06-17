@@ -17,7 +17,10 @@ RUN apk add --no-cache \
       openssh-client ca-certificates tini 'git>=2.12.0' 'gnutls>=3.6.7' gnupg gawk socat build-base gcc wget git bash curl \
     && update-ca-certificates
 RUN apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing git-secret
-RUN git clone --depth 1 -b ${FLUX_VERSION} https://github.com/fluxcd/flux.git . \
+# RUN git clone --depth 1 -b ${FLUX_VERSION} https://github.com/fluxcd/flux.git . \
+RUN git clone --depth 1 -b ${FLUX_VERSION} https://github.com/ikaruswill/flux.git . \
+    && git fetch --no-tags origin ikaruswill/multiarch-fix:refs/remotes/origin/ikaruswill/multiarch-fix \
+    && git checkout origin/ikaruswill/multiarch-fix pkg/registry/client.go \
     && go build -o fluxd -installsuffix cgo ./cmd/fluxd
 
 # download fluxctl
